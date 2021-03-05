@@ -6,6 +6,7 @@
 	<modules>
 		<module>pd-dmsdw-core</module>
 		<module>pd-dmsdw-cmd-app</module>
+		<module>pd-dmsdw-loinc2hpo-app</module>
 	</modules>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -18,6 +19,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>s4-pd-dmsdw</name>
 	<description>transform and analyze data in dmsdw</description>
+	<url>https://github.com/aaronzhangSema4/s4-pd-dmsdw</url>
 
 	<properties>
 		<java.version>1.8</java.version>
@@ -26,6 +28,18 @@
 	</properties>
 
 	<dependencies>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.junit.vintage</groupId>
+					<artifactId>junit-vintage-engine</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
 	</dependencies>
 

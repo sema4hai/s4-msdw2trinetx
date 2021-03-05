@@ -1,4 +1,4 @@
-package com.sema4;
+package com.delivery.pharma.sema4.loinc2hpo;
 
 import static org.junit.Assert.assertTrue;
 

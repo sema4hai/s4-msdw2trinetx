@@ -1,4 +1,4 @@
-package com.sema4;
+package com.delivery.pharma.sema4.loinc2hpo;
 
 /**
  * Hello world!

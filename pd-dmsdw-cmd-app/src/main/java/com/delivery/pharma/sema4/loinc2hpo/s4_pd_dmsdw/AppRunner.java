@@ -1,4 +1,4 @@
-package com.sema4.s4_pd_dmsdw;
+package com.delivery.pharma.sema4.loinc2hpo.s4_pd_dmsdw;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
