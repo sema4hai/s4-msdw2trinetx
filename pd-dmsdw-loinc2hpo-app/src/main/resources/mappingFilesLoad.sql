@@ -1,0 +1,1 @@
+\COPY pd_test_db.hpo FROM 'hp_terms_list.csv' DELIMITER ',' QUOTE '"' CSV
