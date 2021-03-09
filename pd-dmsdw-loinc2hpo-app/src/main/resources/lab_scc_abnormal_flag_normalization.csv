@@ -1,0 +1,42 @@
+abnormal_flag,n,mapTo
+NULL,320438476,N
+Below low normal,51541204,L
+Above high normal,48657959,H
+Abnormal (applies to non-numeric results),5025342,A
+Below lower panic limits,1139856,L
+Above upper panic limits,808301,H
+Critical or Absurd (alphanumeric only),64838,U
+Normal (applies to non-numeric results),40185,N
+Sensitive (microbiology sensitivies only),8664,U
+Resistant (microbiology sensitivies only),1803,U
+Below low normal|Below low normal,662,L
+Above high normal|Above high normal,456,H
+Intermediate (microbiology sensitivies only),287,U
+Below low normal|Above high normal,173,A
+Above high normal|Below low normal,140,A
+Resistant (microbiology sensitivies only)|Sensitive (microbiology sensitivies only),112,U
+Sensitive (microbiology sensitivies only)|Resistant (microbiology sensitivies only),101,U
+Abnormal Flag - Unknown,82,U
+Intermediate (microbiology sensitivies only)|Sensitive (microbiology sensitivies only),34,U
+Abnormal Flag - Unknown|Moderately sensitive (microbiology sensitivies only),32,U
+Moderately sensitive (microbiology sensitivies only)|Abnormal Flag - Unknown,30,U
+Sensitive (microbiology sensitivies only)|Intermediate (microbiology sensitivies only),23,U
+Abnormal (applies to non-numeric results)|Abnormal (applies to non-numeric results),23,U
+Above high normal|Above upper panic limits,22,U
+Above upper panic limits|Above high normal,21,U
+Below lower panic limits|Below lower panic limits,9,U
+Below lower panic limits|Below low normal,6,U
+Below low normal|Below lower panic limits,5,U
+Intermediate (microbiology sensitivies only)|Resistant (microbiology sensitivies only),5,U
+Above upper panic limits|Above upper panic limits,3,U
+Resistant (microbiology sensitivies only)|Intermediate (microbiology sensitivies only),3,U
+Above upper panic limits|Below low normal,2,U
+Moderately sensitive (microbiology sensitivies only),1,U
+Critical or Absurd (alphanumeric only)|Critical or Absurd (alphanumeric only),1,U
+Abnormal Flag - Unknown|Sensitive (microbiology sensitivies only)|Resistant (microbiology sensitivies only)|Intermediate (microbiology sensitivies only),1,U
+Abnormal (applies to non-numeric results)|Above high normal,1,U
+Sensitive (microbiology sensitivies only)|Intermediate (microbiology sensitivies only)|Abnormal Flag - Unknown|Resistant (microbiology sensitivies only),1,U
+Sensitive (microbiology sensitivies only)|Resistant (microbiology sensitivies only)|Abnormal Flag - Unknown|Moderately sensitive (microbiology sensitivies only),1,U
+Below lower panic limits|Above high normal,1,U
+Sensitive (microbiology sensitivies only)|Abnormal Flag - Unknown|Resistant (microbiology sensitivies only),1,U
+Intermediate (microbiology sensitivies only)|Sensitive (microbiology sensitivies only)|Resistant (microbiology sensitivies only),1,U
