@@ -10,8 +10,12 @@ import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
 
 import java.io.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -23,7 +27,7 @@ public class InferHpoCmd implements Command {
     @Parameter(names = {"--hpo"}, required = true)
     String hpoOboPath;
 
-    @Parameter(names = {"-i", "--input"}, required = true, description = "lab result, must have loinc, interpretation")
+    @Parameter(names = {"-i", "--input"}, description = "lab result, must have loinc, interpretation")
     String inPath;
 
     @Parameter(names = {"--sep"}, required = false, description = "column separator")
@@ -31,6 +35,12 @@ public class InferHpoCmd implements Command {
 
     @Parameter(names = {"-o", "--output"}, required = false, description = "filepath for results")
     String outPath;
+
+    private JdbcTemplate jdbcTemplate;
+
+    public InferHpoCmd(JdbcTemplate jdbcTemplate){
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public void run() {
@@ -48,6 +58,25 @@ public class InferHpoCmd implements Command {
         Ontology hpo = OntologyLoader.loadOntology(new File(hpoOboPath));
 
         // ii, process lab result
+        // lab data provided from local filesystem
+        // or from database
+        if (inPath != null){
+            inferHpo(inPath, hpo, writer);
+        } else {
+            inferHpo(jdbcTemplate, hpo, writer);
+        }
+
+        try {
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        logger.info("end inferring HPO");
+    }
+
+
+    public void inferHpo(String inPath, Ontology hpo, Writer writer){
         try (BufferedReader reader = new BufferedReader(new FileReader(inPath))){
             String line = reader.readLine();
             String[] colnames = line.split(SEP, -1);
@@ -139,14 +168,57 @@ public class InferHpoCmd implements Command {
         } catch (IOException e){
             e.printStackTrace();
         }
-
-        try {
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        logger.info("end inferring HPO");
     }
+
+
+    public void inferHpo(JdbcTemplate jdbcTemplate, Ontology hpo, Writer writer){
+
+        String sql = "WITH " +
+                "lab_scc_2020q2 as (\n" +
+                "SELECT l.medical_record_number , l.encounter_key , l.age_in_days_key , l.clinical_result_numeric , trim(from l.unit_of_measure_numeric) as unit_of_measure_numeric , l.reference_range , l.procedure_key, \n" +
+                "case when l.abnormal_flag is null then 'N' else l.abnormal_flag end as abnormal_flag \n" +
+                "FROM pd_prod_db.lab_scc_2020q2 l where l.medical_record_number in (145966274, 957377737, 230212426)" +
+                "), " +
+                "lab_scc_abnormal_flag_mapping AS (\n" +
+                "SELECT case when abf.abnormal_flag is NULL then 'N' else abf.abnormal_flag end as abnormal_flag, abf.mapto \n" +
+                "FROM pd_prod_db.lab_scc_abnormal_flag_mapping abf\n" +
+                ") " +
+                "SELECT lab.medical_record_number, lab.encounter_key , lab.age_in_days_key , fdp.context_name , fdp.context_procedure_code , loinc.loinc , lab.clinical_result_numeric , lab.unit_of_measure_numeric ,lab.reference_range , lab.abnormal_flag , abf.mapto, l2h.hpotermid , l2h.isnegated, hpo.label, RANDOM() as r \n" +
+                "FROM lab_scc_2020q2 lab \n" +
+                "left JOIN pd_prod_db.fd_procedure fdp using (procedure_key)\n" +
+                "left JOIN pd_prod_db.loinc_mapping loinc on fdp.context_procedure_code = loinc.code and lab.unit_of_measure_numeric = loinc.unit \n" +
+                "left JOIN lab_scc_abnormal_flag_mapping abf using (abnormal_flag)\n" +
+                "left JOIN pd_prod_db.loinc2hpo l2h on loinc.loinc = l2h.loincid and abf.mapto = l2h.code \n" +
+                "left JOIN pd_prod_db.hpo hpo on l2h.hpotermid = hpo.termid";
+
+        jdbcTemplate.query(sql, new RowCallbackHandler() {
+            @Override
+            public void processRow(ResultSet resultSet) throws SQLException {
+
+                while (resultSet.next()) {
+
+                    String mrn = resultSet.getString(1);
+                    int age = resultSet.getInt(3);
+                    String local_code = resultSet.getString(5);
+                    String loinc = resultSet.getString(6);
+                    String hpoTermId = resultSet.getString(12);
+
+                    if (hpoTermId != null){
+                        logger.debug(String.format("MRN: %s, Local code: %s, HPO: %s", mrn, local_code, hpoTermId));
+                        System.out.println("ancestors: ");
+                        Collection<TermId> ancestors = hpo.getAncestorTermIds(TermId.of(hpoTermId), false);
+                        for (TermId ancestor : ancestors){
+                            if (ancestor.equals(hpoTermId)){
+                                continue;
+                            }
+                            System.out.println(ancestor.getValue());
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+
 }
 

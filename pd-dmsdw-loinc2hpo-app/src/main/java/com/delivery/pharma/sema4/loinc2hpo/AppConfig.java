@@ -17,7 +17,7 @@ public class AppConfig {
 
     @Bean(name = "inferHpo")
     public Command inferHpo(){
-        return new InferHpoCmd();
+        return new InferHpoCmd(jdbcTemplate);
     }
 
     @Bean(name = "termMap")
@@ -26,7 +26,7 @@ public class AppConfig {
     }
 
     @Bean(name = "uploadMappingFile")
-    public Command uploadMappingFileCmd(JdbcTemplate jdbcTemplate) {
+    public Command uploadMappingFileCmd() {
         return new UploadMappingFile(jdbcTemplate);
     }
 }
