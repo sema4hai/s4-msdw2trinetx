@@ -20,6 +20,9 @@ public class CliRunner implements CommandLineRunner {
     @Autowired @Qualifier("uploadMappingFile")
     Command uploadMappingFileCmd;
 
+    @Autowired @Qualifier("is_aPairs")
+    Command isAPairsCmd;
+
 
     @Override
     public void run(String... args) throws Exception {
@@ -30,9 +33,10 @@ public class CliRunner implements CommandLineRunner {
         JCommander jc = JCommander.newBuilder()
                 .addObject(this)
                 .acceptUnknownOptions(true) //this is for the sake of passing Spring variables
-                .addCommand("inferHpo", inferHpoCmd)
                 .addCommand("termMap", termMapCmd)
+                .addCommand("isAPairs", isAPairsCmd)
                 .addCommand("uploadMappingFile", uploadMappingFileCmd)
+                .addCommand("inferHpo", inferHpoCmd)
                 .build();
 
         try {
@@ -68,6 +72,9 @@ public class CliRunner implements CommandLineRunner {
                 break;
             case "uploadMappingFile":
                 cmd = uploadMappingFileCmd;
+                break;
+            case "isAPairs":
+                cmd = isAPairsCmd;
                 break;
             default:
                 System.err.println(String.format("[ERROR] com.sema4.s4loinc2hpo.command \"%s\" not recognized",command));
