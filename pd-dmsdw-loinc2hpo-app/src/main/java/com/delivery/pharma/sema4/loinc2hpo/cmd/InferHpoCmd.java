@@ -198,20 +198,22 @@ public class InferHpoCmd implements Command {
                 while (resultSet.next()) {
 
                     String mrn = resultSet.getString(1);
+                    int encounter_key = resultSet.getInt(2);
                     int age = resultSet.getInt(3);
                     String local_code = resultSet.getString(5);
-                    String loinc = resultSet.getString(6);
-                    String hpoTermId = resultSet.getString(12);
+                    TermId hpoTermId = resultSet.getString(12) == null ? null : TermId.of(resultSet.getString(12));
 
                     if (hpoTermId != null){
                         logger.debug(String.format("MRN: %s, Local code: %s, HPO: %s", mrn, local_code, hpoTermId));
-                        System.out.println("ancestors: ");
-                        Collection<TermId> ancestors = hpo.getAncestorTermIds(TermId.of(hpoTermId), false);
+                        Collection<TermId> ancestors = hpo.getAncestorTermIds(hpoTermId, false);
+                        //"study_id,encounter_key,age_in_days_key,hpo_term_id,is_inferred
                         for (TermId ancestor : ancestors){
-                            if (ancestor.equals(hpoTermId)){
-                                continue;
+                            boolean isInferred = !ancestor.equals(hpoTermId);
+                            try {
+                                writer.write(String.format("%s, %d, %d, %s, %s\n", mrn, encounter_key, age, ancestor.getValue(), isInferred));
+                            } catch (IOException e) {
+                                throw new RuntimeException("IO error during writing results from inferHpo; premature termination");
                             }
-                            System.out.println(ancestor.getValue());
                         }
                     }
                 }
