@@ -33,6 +33,8 @@ public class UploadMappingFile implements Command {
     private String loinc2HpoPath;
     @Parameter(names = "--hpoTerms", description = "HPO term list as a flat file")
     private String hpoTermsPath;
+    @Parameter(names = "--hpoIsAPairs", description = "HPO is_a pairs, along with their distance as a flat file")
+    private String hpoIsAPairPath;
     @Parameter(names = "--abnormalFlags", description = "specify abnormal flag mapping")
     private String abnormalFlagMappingPath;
     @Parameter(names = "--debug", description = "running in debug mode")
@@ -44,6 +46,7 @@ public class UploadMappingFile implements Command {
         logger.info("loincMapping Path: " + labCode2LoincPath);
         logger.info("loinc2hpo path: " + loinc2HpoPath);
         logger.info("hpoTerms Path: " + hpoTermsPath);
+        logger.info("hpoIsAPairPath: " + hpoIsAPairPath);
 
         String schema = debug ? "pd_test_db" : "pd_prod_db";
 
@@ -57,6 +60,10 @@ public class UploadMappingFile implements Command {
 
         if (hpoTermsPath != null) {
             uploadHpoTerms(hpoTermsPath, jdbcTemplate, schema);
+        }
+
+        if (hpoIsAPairPath != null){
+            uploadHpoIsAPairs(hpoIsAPairPath, jdbcTemplate, schema);
         }
 
         if (abnormalFlagMappingPath != null){
@@ -217,6 +224,49 @@ public class UploadMappingFile implements Command {
             e.printStackTrace();
         }
     }
+
+    public void uploadHpoIsAPairs(String filePath, JdbcTemplate jdbcTemplate, String schema){
+        jdbcTemplate.execute(String.format("DROP TABLE IF EXISTS %s.hpo_is_a_pairs", schema));
+        String ddl = String.format("CREATE TABLE %s.hpo_is_a_pairs (current VARCHAR(10), ancestor VARCHAR(10), distance INTEGER)", schema);
+        jdbcTemplate.execute(ddl);
+
+        String sql = String.format("INSERT INTO %s.hpo_is_a_pairs values ", schema);
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))){
+            // no header line
+            String line = reader.readLine();
+            List<Object[]> buffer = new ArrayList<>();
+            while(true){
+                line = reader.readLine();
+                //last line
+                if (line == null){
+                    //flush buffer
+                    if (!buffer.isEmpty()){
+                        String values = buffer.stream().map(objs -> String.format("('%s', '%s', %s)", objs[0], objs[1], objs[2]))
+                                .collect(Collectors.joining(","));
+                        jdbcTemplate.update(sql + values + ";");
+                        buffer.clear();
+                        logger.trace("last batch updated");
+                    }
+                    break;
+                }
+                String[] fields = line.split(",", 3);
+                //escape single quote: replace with double quote (Redshift specific)
+                buffer.add(new Object[]{fields[0], fields[1], fields[2]});
+                if (buffer.size() == 10000){
+                    String values = buffer.stream().map(objs -> String.format("('%s', '%s', %s)", objs[0], objs[1], objs[2]))
+                            .collect(Collectors.joining(","));
+                    jdbcTemplate.update(sql + values + ";");
+                    buffer.clear();
+                    logger.trace("new batch updated");
+                }
+            }
+        } catch (FileNotFoundException e){
+            e.printStackTrace();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
 
     public void uploadAbnormalFlagMapping(String filePath, JdbcTemplate jdbcTemplate, String schema){
         jdbcTemplate.execute(String.format("DROP TABLE IF EXISTS %s.lab_scc_abnormal_flag_mapping", schema));

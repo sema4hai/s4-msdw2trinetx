@@ -5,6 +5,7 @@ import com.beust.jcommander.Parameters;
 import com.delivery.pharma.sema4.loinc2hpo.MyUtils;
 import org.apache.commons.lang.StringUtils;
 import org.monarchinitiative.phenol.io.OntologyLoader;
+import org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -35,9 +36,21 @@ public class HpoTermMap implements Command {
     public void run() {
 
         Ontology hpo = OntologyLoader.loadOntology(new File(hpoOboPath));
-        Map<TermId, Term> termMap = hpo.getTermMap();
-
         Writer writer = MyUtils.getWriter(outPath);
+
+        hpoTermId2Label(hpo, writer);
+
+        try {
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    public void hpoTermId2Label(Ontology hpo, Writer writer){
+        Map<TermId, Term> termMap = hpo.getTermMap();
         List<String> termMapEntry = termMap.entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey().toString(), e-> e.getValue().getName()))
                 .entrySet()
@@ -49,12 +62,5 @@ public class HpoTermMap implements Command {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        try {
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
     }
 }

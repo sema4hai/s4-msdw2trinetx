@@ -1,9 +1,6 @@
 package com.delivery.pharma.sema4.loinc2hpo;
 
-import com.delivery.pharma.sema4.loinc2hpo.cmd.Command;
-import com.delivery.pharma.sema4.loinc2hpo.cmd.HpoTermMap;
-import com.delivery.pharma.sema4.loinc2hpo.cmd.InferHpoCmd;
-import com.delivery.pharma.sema4.loinc2hpo.cmd.UploadMappingFile;
+import com.delivery.pharma.sema4.loinc2hpo.cmd.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,5 +25,10 @@ public class AppConfig {
     @Bean(name = "uploadMappingFile")
     public Command uploadMappingFileCmd() {
         return new UploadMappingFile(jdbcTemplate);
+    }
+
+    @Bean(name = "is_aPairs")
+    public Command is_aPairs(){
+        return new HpoIsAPairsCmd();
     }
 }
