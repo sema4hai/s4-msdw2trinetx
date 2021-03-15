@@ -5,7 +5,7 @@ import com.beust.jcommander.Parameters;
 import com.delivery.pharma.sema4.loinc2hpo.MyUtils;
 import org.apache.commons.lang.StringUtils;
 import org.monarchinitiative.phenol.io.OntologyLoader;
-import org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm;
+import org.monarchinitiative.phenol.ontology.algo.ShortestPathTable;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -50,15 +50,19 @@ public class HpoTermMap implements Command {
 
 
     public void hpoTermId2Label(Ontology hpo, Writer writer){
+        TermId PHENOTYPICALLY_ABNORMALITY = TermId.of("HP:0000118");
+        // @TODO: this method is not working when a term have multiple parents; figure out why
+        ShortestPathTable shortestPathTable = new ShortestPathTable(hpo);
         Map<TermId, Term> termMap = hpo.getTermMap();
         List<String> termMapEntry = termMap.entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey().toString(), e-> e.getValue().getName()))
                 .entrySet()
                 .stream()
-                .map(entry -> entry.getKey() + "," + entry.getValue())
+                .map(entry -> entry.getKey() + "," + shortestPathTable.getDistance(TermId.of(entry.getKey()), PHENOTYPICALLY_ABNORMALITY) + "," + entry.getValue() )
                 .collect(Collectors.toList());
         try {
             writer.write(StringUtils.join(termMapEntry, '\n'));
+            writer.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }

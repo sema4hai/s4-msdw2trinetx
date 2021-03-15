@@ -186,7 +186,7 @@ public class UploadMappingFile implements Command {
 
     public void uploadHpoTerms(String filePath, JdbcTemplate jdbcTemplate, String schema){
         jdbcTemplate.execute(String.format("DROP TABLE IF EXISTS %s.hpo", schema));
-        String ddl = String.format("CREATE TABLE %s.hpo (termId VARCHAR(10), label VARCHAR)", schema);
+        String ddl = String.format("CREATE TABLE %s.hpo (termId VARCHAR(10), distanceToRoot INTEGER, label VARCHAR)", schema);
         jdbcTemplate.execute(ddl);
 
         String sql = String.format("INSERT INTO %s.hpo values ", schema);
@@ -200,18 +200,21 @@ public class UploadMappingFile implements Command {
                 if (line == null){
                     //flush buffer
                     if (!buffer.isEmpty()){
-                        String values = buffer.stream().map(objs -> String.format("('%s', '%s')", objs[0], objs[1]))
+                        String values = buffer.stream().map(objs -> String.format("('%s', %s, '%s')", objs[0], objs[1], objs[2]))
                                 .collect(Collectors.joining(","));
                         jdbcTemplate.update(sql + values + ";");
                         buffer.clear();
                     }
                     break;
                 }
-                String[] fields = line.split(",", 2);
+                String[] fields = line.split(",",3);
+                if (fields.length != 3){
+                    System.out.println(line);
+                }
                 //escape single quote: replace with double quote (Redshift specific)
-                buffer.add(new Object[]{fields[0], fields[1].replaceAll("'", "''")});
+                buffer.add(new Object[]{fields[0], fields[1], fields[2].replaceAll("'", "''")});
                 if (buffer.size() == 1000){
-                    String values = buffer.stream().map(objs -> String.format("('%s', '%s')", objs[0], objs[1]))
+                    String values = buffer.stream().map(objs -> String.format("('%s', %s, '%s')", objs[0], objs[1], objs[2]))
                             .collect(Collectors.joining(","));
                     jdbcTemplate.update(sql + values + ";");
                     buffer.clear();
