@@ -1,8 +1,9 @@
+-- patient
 -- date of birth
 CREATE OR REPLACE VIEW person_dob AS
 WITH dob_rank as (
 	SELECT medical_record_number , date_of_birth, ROW_NUMBER() over (PARTITION by medical_record_number order by count(*) desc ) as date_of_birth_rank
-	FROM d_person dp
+	FROM dmsdw_2020q2.d_person dp
 	group by medical_record_number, date_of_birth)
 SELECT medical_record_number, date_of_birth
 FROM dob_rank
@@ -12,7 +13,7 @@ where date_of_birth_rank = 1;
 CREATE OR REPLACE VIEW person_mob AS
 WITH mob_rank as (
 	SELECT medical_record_number , month_of_birth, ROW_NUMBER() over (PARTITION by medical_record_number order by count(*) desc ) as month_of_birth_rank
-	FROM d_person dp
+	FROM dmsdw_2020q2.d_person dp
 	group by medical_record_number, month_of_birth
 )
 SELECT medical_record_number , month_of_birth
@@ -23,7 +24,7 @@ WHERE month_of_birth_rank = 1;
 CREATE OR REPLACE VIEW person_gender AS
 with gender_rank as (
 	SELECT medical_record_number , gender , ROW_NUMBER() over (PARTITION by medical_record_number order by count(*) desc ) as gender_rank
-	FROM d_person dp
+	FROM dmsdw_2020q2.d_person dp
 	group by medical_record_number, gender
 )
 SELECT medical_record_number , gender
@@ -34,7 +35,7 @@ WHERE gender_rank = 1;
 CREATE OR REPLACE VIEW person_race AS
 with normalized_race as (
 	SELECT distinct medical_record_number , mapto
-	FROM d_person
+	FROM dmsdw_2020q2.d_person
 	left join pd_test_db.dmsdw_race_map rm on trim(d_person.race) = rm.race or (trim(d_person.race) = '' and rm.race is null) or (d_person.race is null and rm.race is null)
 	group by medical_record_number, mapto
 ),
@@ -75,10 +76,11 @@ FROM combine
 order by medical_record_number;
 
 -- patient demographics
-create temp table person AS
+drop table if exists pd_test_db.person_dmsdw_2020q2;
+create table pd_test_db.person_dmsdw_2020q2 AS
 with all_patient_mrn as (
 	SELECT distinct medical_record_number
-	FROM d_person
+	FROM dmsdw_2020q2.d_person
 )
 SELECT *
 FROM all_patient_mrn
