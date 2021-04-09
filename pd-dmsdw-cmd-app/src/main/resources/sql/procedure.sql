@@ -1,3 +1,5 @@
+-- TODO: include newborn delivery
+-- TODO: ~20% "canceled" billing records are also noted as "completed". Right now, I consider a billing record valid as long as it is noted "completed"
 CREATE TABLE pd_prod_db.procedure_dmsdw_2020q2 AS
 WITH procedure_for_staging AS (
 SELECT DISTINCT dp.medical_record_number , f.encounter_key, f.caregiver_group_key, f.procedure_group_key,
