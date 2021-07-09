@@ -52,13 +52,13 @@ public class HpoTermMap implements Command {
     public void hpoTermId2Label(Ontology hpo, Writer writer){
         TermId PHENOTYPICALLY_ABNORMALITY = TermId.of("HP:0000118");
         // @TODO: this method is not working when a term have multiple parents; figure out why
+        // seems these terms are actually alternative ids
+        // now very few terms remain having -1 for their distance to root, but they are not phenotype terms
         ShortestPathTable shortestPathTable = new ShortestPathTable(hpo);
         Map<TermId, Term> termMap = hpo.getTermMap();
         List<String> termMapEntry = termMap.entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey().toString(), e-> e.getValue().getName()))
-                .entrySet()
-                .stream()
-                .map(entry -> entry.getKey() + "," + shortestPathTable.getDistance(TermId.of(entry.getKey()), PHENOTYPICALLY_ABNORMALITY) + "," + entry.getValue() )
+                .filter(entry -> !entry.getValue().isObsolete())
+                .map(entry -> entry.getKey().toString() + "," + shortestPathTable.getDistance(entry.getValue().getId(), PHENOTYPICALLY_ABNORMALITY) + "," + entry.getValue().getName() )
                 .collect(Collectors.toList());
         try {
             writer.write(StringUtils.join(termMapEntry, '\n'));

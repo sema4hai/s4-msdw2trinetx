@@ -37,8 +37,12 @@ public class UploadMappingFile implements Command {
     private String hpoIsAPairPath;
     @Parameter(names = "--abnormalFlags", description = "specify abnormal flag mapping")
     private String abnormalFlagMappingPath;
+    @Parameter(names = "--race", description = "specify race map")
+    private String raceMapPath;
     @Parameter(names = "--debug", description = "running in debug mode")
     private boolean debug = false;
+    @Parameter(names = "--schema", description = "explicitly specify the schema")
+    private String schema;
 
     @Override
     public void run() {
@@ -47,8 +51,11 @@ public class UploadMappingFile implements Command {
         logger.info("loinc2hpo path: " + loinc2HpoPath);
         logger.info("hpoTerms Path: " + hpoTermsPath);
         logger.info("hpoIsAPairPath: " + hpoIsAPairPath);
+        logger.info("race_map Path: " + raceMapPath);
 
-        String schema = debug ? "pd_test_db" : "pd_prod_db";
+        if (schema == null){
+            schema = debug ? "pd_test_db" : "pd_prod_db";
+        }
 
         if (labCode2LoincPath != null){
             uploadLabCode2Loinc(labCode2LoincPath, jdbcTemplate, schema);
@@ -68,6 +75,10 @@ public class UploadMappingFile implements Command {
 
         if (abnormalFlagMappingPath != null){
             uploadAbnormalFlagMapping(abnormalFlagMappingPath, jdbcTemplate, schema);
+        }
+
+        if (raceMapPath != null){
+            uploadRaceMapping(raceMapPath, jdbcTemplate, schema);
         }
     }
 
@@ -193,8 +204,10 @@ public class UploadMappingFile implements Command {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))){
             // no header line
             String line;
+            int line_count = 0;
             List<Object[]> buffer = new ArrayList<>();
             while(true){
+                line_count++;
                 line = reader.readLine();
                 //last line
                 if (line == null){
@@ -209,7 +222,9 @@ public class UploadMappingFile implements Command {
                 }
                 String[] fields = line.split(",",3);
                 if (fields.length != 3){
+                    System.err.println(String.format("line %d does not have 3 fields: ", line_count));
                     System.out.println(line);
+                    throw new RuntimeException();
                 }
                 //escape single quote: replace with double quote (Redshift specific)
                 buffer.add(new Object[]{fields[0], fields[1], fields[2].replaceAll("'", "''")});
@@ -298,6 +313,37 @@ public class UploadMappingFile implements Command {
             e.printStackTrace();
         }
         jdbcTemplate.update(sql + StringUtils.join(values, ","));
+    }
+
+    public void uploadRaceMapping(String filePath, JdbcTemplate jdbcTemplate, String schema){
+
+        jdbcTemplate.execute(String.format("DROP TABLE IF EXISTS %s.dmsdw_race_map", schema));
+        String ddl = String.format("CREATE TABLE %s.dmsdw_race_map (" +
+                "race VARCHAR, " +
+                "mapTo VARCHAR)", schema);
+        jdbcTemplate.execute(ddl);
+
+        String sql = String.format("INSERT INTO %s.dmsdw_race_map values ", schema);
+        ArrayList<String> values = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))){
+            String line = reader.readLine();
+            while ((line = reader.readLine()) != null){
+                String[] fields = line.split(",");
+                String race = fields[0];
+                String map_to = fields[2];
+                if (race.equals("")){
+                    values.add(String.format("(NULL, '%s')", map_to));
+                } else {
+                    values.add(String.format("('%s', '%s')", race, map_to));
+                }
+            }
+        } catch (FileNotFoundException e){
+            e.printStackTrace();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        jdbcTemplate.update(sql + StringUtils.join(values, ","));
+
     }
 
 }
