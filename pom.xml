@@ -7,7 +7,8 @@
 		<module>pd-dmsdw-core</module>
 		<module>pd-dmsdw-cmd-app</module>
 		<module>pd-dmsdw-loinc2hpo-app</module>
-	</modules>
+        <module>pd-msdw-cmd-app</module>
+    </modules>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
