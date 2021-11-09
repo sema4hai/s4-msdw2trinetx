@@ -6,11 +6,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.sql.DataSource;
+
 @Configuration
 public class AppConfig {
 
     @Autowired
     JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    DataSource dataSource;
 
     @Bean(name = "inferHpo")
     public Command inferHpo(){
