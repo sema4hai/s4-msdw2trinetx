@@ -9,7 +9,7 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import javax.sql.DataSource;
 
 @Parameters(commandDescription = "Transform MSDW into a model similar to TriNetX")
-public class MSDW2TriNetXLite implements Command {
+public class MSDW2TriNetXLiteCmd implements Command {
 
     @Autowired
     DataSource dataSource;

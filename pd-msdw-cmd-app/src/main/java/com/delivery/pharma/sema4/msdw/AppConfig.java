@@ -1,7 +1,7 @@
 package com.delivery.pharma.sema4.msdw;
 
 import com.delivery.pharma.sema4.msdw.command.Command;
-import com.delivery.pharma.sema4.msdw.command.MSDW2TriNetXLite;
+import com.delivery.pharma.sema4.msdw.command.MSDW2TriNetXLiteCmd;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +20,6 @@ public class AppConfig {
 
     @Bean(name = "msdw2trinetx")
     public Command msdw2trinetx(){
-        return new MSDW2TriNetXLite();
+        return new MSDW2TriNetXLiteCmd();
     }
 }
