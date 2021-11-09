@@ -76,3 +76,7 @@ FROM all_patient_mrn
 left join person_dob using (medical_record_number)
 left join person_gender using (medical_record_number)
 left join person_race using (medical_record_number);
+
+DROP VIEW IF EXISTS person_dob;
+DROP VIEW IF EXISTS person_gender;
+DROP VIEW IF EXISTS person_race;

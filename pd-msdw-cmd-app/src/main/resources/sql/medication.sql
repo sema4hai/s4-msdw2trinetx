@@ -282,3 +282,7 @@ FROM med_2
 UNION ALL
 select distinct *
 FROM med_3;
+
+DROP VIEW IF EXISTS msdw_med_epic_admin;
+DROP VIEW IF EXISTS msdw_med_epic_prscb;
+DROP VIEW IF EXISTS msdw_med_tds_admin;
