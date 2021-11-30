@@ -1,17 +1,21 @@
 -- Below is a more efficient way to pivot diagnoses in fact table
 -- I have confirmed that the pivot keys are sufficient: operation_key and data_feed_key seem not necessary
-DROP VIEW IF EXISTS epic_primary_wide CASCADE;
+DROP VIEW IF EXISTS epic_primary_wide;
+
 create or replace view epic_primary_wide as
-SELECT person_key , encounter_key, caregiver_group_key, facility_key, diagnosis_group_key, calendar_key ,
+SELECT f.person_key , f.encounter_key, f.caregiver_group_key, f.facility_key, f.diagnosis_group_key, f.calendar_key ,
  LISTAGG(DISTINCT case when meta_data_key = 5719 then value end, '|') as Dx_Annotation,
  LISTAGG(DISTINCT case when meta_data_key = 5720 then value end, '|') as Dx_qualifier,
  LISTAGG(DISTINCT case when meta_data_key = 5721 then value end, '|') as Primary_Dx_FLAG,
  LISTAGG(DISTINCT case when meta_data_key = 5722 then value end, '|') as Chronic_Dx_Flag,
  LISTAGG(DISTINCT case when meta_data_key = 5723 then value end, '|') as Dx_Comments
-FROM hai_az_test.fact fact
+FROM prod_msdw.fact f
 left join prod_msdw.b_diagnosis bd using (diagnosis_group_key)
 where bd.diagnosis_role = 'Primary'
-GROUP BY person_key , encounter_key, caregiver_group_key, facility_key, diagnosis_group_key, calendar_key ;
+GROUP BY f.person_key , f.encounter_key, f.caregiver_group_key, f.facility_key, f.diagnosis_group_key, f.calendar_key ;
+
+select *
+from epic_primary_wide limit 20;
 
 
 -- Join to other dict to get required information. Alternatively, we can just use diagnosis_group_key to save space.
@@ -39,7 +43,7 @@ dp.medical_record_number , f.encounter_key , f.caregiver_group_key, f.facility_k
 bd.diagnosis_role, bd.diagnosis_group_key , bd.diagnosis_rank,  bd.diagnosis_key ,
 fdd.context_name, fdd.context_diagnosis_code, fdd.description,
 dc.calendar_date , f.time_of_day_key , f.meta_data_key, dm.level1_context_name, dm.level2_event_name, dm.level3_action_name, dm.level4_field_name
-FROM hai_az_test.fact f
+FROM prod_msdw.fact f
 JOIN prod_msdw.d_person dp on f.person_key = dp.person_key
 JOIN prod_msdw.b_diagnosis bd ON f.diagnosis_group_key = bd.diagnosis_group_key
 JOIN prod_msdw.fd_diagnosis fdd on bd.diagnosis_key = fdd.diagnosis_key
@@ -63,7 +67,7 @@ dp.medical_record_number , f.encounter_key , f.caregiver_group_key, f.facility_k
 bd.diagnosis_role, bd.diagnosis_group_key , bd.diagnosis_rank,  bd.diagnosis_key ,
 fdd.context_name, fdd.context_diagnosis_code, fdd.description,
 dc.calendar_date , f.time_of_day_key , f.meta_data_key, dm.level1_context_name, dm.level2_event_name, dm.level3_action_name, dm.level4_field_name
-FROM hai_az_test.fact f
+FROM prod_msdw.fact f
 JOIN prod_msdw.d_person dp on f.person_key = dp.person_key
 JOIN prod_msdw.b_diagnosis bd ON f.diagnosis_group_key = bd.diagnosis_group_key
 JOIN prod_msdw.fd_diagnosis fdd on bd.diagnosis_key = fdd.diagnosis_key
@@ -87,7 +91,7 @@ LISTAGG(DISTINCT case when meta_data_key = 5719 then value end, '|') as Dx_Annot
  LISTAGG(DISTINCT case when meta_data_key = 5721 then value end, '|') as Primary_Dx_FLAG,
  LISTAGG(DISTINCT case when meta_data_key = 5722 then value end, '|') as Chronic_Dx_Flag,
  LISTAGG(DISTINCT case when meta_data_key = 5723 then value end, '|') as Dx_Comments
-FROM hai_az_test.fact fact
+FROM prod_msdw.fact fact
 JOIN prod_msdw.b_diagnosis bd using (diagnosis_group_key)
 where bd.diagnosis_role = 'Reason For Visit'
 GROUP BY person_key, encounter_key, caregiver_group_key, facility_key, diagnosis_group_key, calendar_key, time_of_day_key;
@@ -116,7 +120,7 @@ dp.medical_record_number , f.encounter_key , f.caregiver_group_key, f.facility_k
 bd.diagnosis_role, bd.diagnosis_group_key , bd.diagnosis_rank,  bd.diagnosis_key ,
 fdd.context_name, fdd.context_diagnosis_code, fdd.description,
 dc.calendar_date , f.meta_data_key, dm.level1_context_name, dm.level2_event_name, dm.level3_action_name
-FROM hai_az_test.fact f
+FROM prod_msdw.fact f
 JOIN prod_msdw.d_person dp on f.person_key = dp.person_key
 JOIN prod_msdw.b_diagnosis bd ON f.diagnosis_group_key = bd.diagnosis_group_key
 JOIN prod_msdw.fd_diagnosis fdd on bd.diagnosis_key = fdd.diagnosis_key
@@ -131,7 +135,7 @@ SELECT medical_record_number, encounter_key, caregiver_group_key, diagnosis_grou
 FROM secondary_diag_staging;
 
 
-CREATE TABLE hai_az_test.diagnosis_2020July AS
+CREATE TABLE hai_az_prod.diagnosis_2020July AS
 SELECT * FROM epic_primary
 UNION ALL
 SELECT * FROM diag_principle
@@ -141,14 +145,6 @@ UNION ALL
 SELECT * FROM reason_visit
 UNION ALL
 SELECT * FROM secondary_diag;
-
-select count(*)
-from hai_az_test.diagnosis_2020July;
-
-select *
-from hai_az_test.diagnosis_2020July
-order by medical_record_number, calendar_date
-limit 50;
 
 DROP VIEW epic_primary ;
 DROP VIEW diag_principle ;
