@@ -23,6 +23,9 @@ public class CliRunner implements CommandLineRunner {
     @Autowired @Qualifier("is_aPairs")
     Command isAPairsCmd;
 
+    @Autowired @Qualifier("loincTestablePhenotypes")
+    Command loincTestablePhenotypesCmd;
+
 
     @Override
     public void run(String... args) throws Exception {
@@ -37,6 +40,7 @@ public class CliRunner implements CommandLineRunner {
                 .addCommand("isAPairs", isAPairsCmd)
                 .addCommand("uploadMappingFile", uploadMappingFileCmd)
                 .addCommand("inferHpo", inferHpoCmd)
+                .addCommand("loincTestablePhenotypes", loincTestablePhenotypesCmd)
                 .build();
 
         try {
@@ -75,6 +79,9 @@ public class CliRunner implements CommandLineRunner {
                 break;
             case "isAPairs":
                 cmd = isAPairsCmd;
+                break;
+            case "loincTestablePhenotypes":
+                cmd = loincTestablePhenotypesCmd;
                 break;
             default:
                 System.err.println(String.format("[ERROR] com.sema4.s4loinc2hpo.command \"%s\" not recognized",command));

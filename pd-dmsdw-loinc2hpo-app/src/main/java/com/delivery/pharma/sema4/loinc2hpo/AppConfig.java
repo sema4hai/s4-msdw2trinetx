@@ -36,4 +36,7 @@ public class AppConfig {
     public Command is_aPairs(){
         return new HpoIsAPairsCmd();
     }
+
+    @Bean(name = "loincTestablePhenotypes")
+    public Command loincTestablePhenotypes() { return new LoincTestablePhenotypesCmd(); }
 }
