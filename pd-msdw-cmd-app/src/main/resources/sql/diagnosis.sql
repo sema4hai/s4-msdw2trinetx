@@ -14,9 +14,6 @@ left join prod_msdw.b_diagnosis bd using (diagnosis_group_key)
 where bd.diagnosis_role = 'Primary'
 GROUP BY f.person_key , f.encounter_key, f.caregiver_group_key, f.facility_key, f.diagnosis_group_key, f.calendar_key ;
 
-select *
-from epic_primary_wide limit 20;
-
 
 -- Join to other dict to get required information. Alternatively, we can just use diagnosis_group_key to save space.
 -- still need to add the meta data information: level 1-3 for meta_data_key 5719-5723
@@ -24,15 +21,12 @@ DROP VIEW IF EXISTS epic_primary;
 CREATE OR REPLACE VIEW epic_primary AS
 SELECT p.medical_record_number , f.encounter_key, f.caregiver_group_key, f.diagnosis_group_key ,bd.diagnosis_rank , bd.diagnosis_key , fdd.context_name , fdd.context_diagnosis_code , fdd.description ,
 dc.calendar_date,
-case when f.Primary_Dx_FLAG ~ 'Yes' then 'Primary' else 'Secondary' end as principal_diagnosis_indicator,  'EPIC Primary' AS diagnosis_source
+case when f.Primary_Dx_FLAG ~ 'Yes' then 'Primary' else 'Secondary' end as principal_diagnosis_indicator
 FROM epic_primary_wide f
 left join prod_msdw.d_person p using (person_key)
 left join prod_msdw.b_diagnosis bd using (diagnosis_group_key)
 left join prod_msdw.fd_diagnosis fdd using (diagnosis_key)
 left join prod_msdw.d_calendar dc using (calendar_key);
-
--- check whether there are multiple values
-SELECT EXISTS (SELECT * FROM epic_primary_wide where primary_dx_flag ~ '.*\\|.*');
 
 
 -- diagnoses with a diagnosis_role of "principal"
@@ -55,7 +49,7 @@ where bd.diagnosis_role = 'Principal';
 DROP VIEW IF EXISTS diag_principle;
 CREATE OR REPLACE VIEW diag_principle AS
 SELECT medical_record_number, encounter_key, caregiver_group_key, diagnosis_group_key, diagnosis_rank, diagnosis_key, context_name, context_diagnosis_code, description,
-       calendar_date, 'Primary' as principle_diagnosis_indicator, 'Principal' as diagnosis_source
+       calendar_date, 'Primary' as principle_diagnosis_indicator
 FROM diag_principle_staging;
 
 
@@ -78,7 +72,7 @@ where bd.diagnosis_role = 'Problem List' and f.meta_data_key in (3490, 3491);
 DROP VIEW IF EXISTS problem_list;
 CREATE OR REPLACE VIEW problem_list AS
 SELECT distinct medical_record_number, encounter_key, caregiver_group_key, diagnosis_group_key, diagnosis_rank, diagnosis_key, context_name, context_diagnosis_code, description,
-       calendar_date, 'Unknown' as principle_diagnosis_indicator, 'Problem List' as diagnosis_source
+       calendar_date, 'Unknown' as principle_diagnosis_indicator
  FROM problem_list_staging;
 
 
@@ -102,8 +96,7 @@ CREATE OR REPLACE VIEW reason_visit AS
 SELECT distinct p.medical_record_number , f.encounter_key, f.caregiver_group_key, f.diagnosis_group_key, bd.diagnosis_rank , bd.diagnosis_key ,
 fdd.context_name , fdd.context_diagnosis_code , fdd.description ,
 dc.calendar_date ,
-case when f.Primary_Dx_FLAG ~ 'Yes' then 'Primary' else 'Secondary' end as principal_diagnosis_indicator,
-'Reason For Visit' as diagnosis_source
+case when f.Primary_Dx_FLAG ~ 'Yes' then 'Primary' else 'Secondary' end as principal_diagnosis_indicator
 FROM reason_visit_wide f
 left join prod_msdw.d_person p using (person_key)
 left join prod_msdw.b_diagnosis bd using (diagnosis_group_key)
@@ -131,20 +124,20 @@ where bd.diagnosis_role = 'Secondary';
 DROP VIEW IF EXISTS secondary_diag;
 CREATE OR REPLACE VIEW secondary_diag AS
 SELECT medical_record_number, encounter_key, caregiver_group_key, diagnosis_group_key, diagnosis_rank, diagnosis_key, context_name, context_diagnosis_code, description, calendar_date,
-'Secondary' as principal_diagnosis_indicator, 'Secondary' as diagnosis_source
+'Secondary' as principal_diagnosis_indicator
 FROM secondary_diag_staging;
 
 
 CREATE TABLE hai_az_prod.diagnosis_2020July AS
-SELECT * FROM epic_primary
+SELECT * , 'EPIC Primary' AS diagnosis_source FROM epic_primary
 UNION ALL
-SELECT * FROM diag_principle
+SELECT * , 'Principal' as diagnosis_source FROM diag_principle
 UNION ALL
-SELECT * FROM problem_list
+SELECT * , 'Problem List' as diagnosis_source FROM problem_list
 UNION ALL
-SELECT * FROM reason_visit
+SELECT * , 'Reason For Visit' as diagnosis_source FROM reason_visit
 UNION ALL
-SELECT * FROM secondary_diag;
+SELECT * , 'Secondary' as diagnosis_source FROM secondary_diag;
 
 DROP VIEW epic_primary ;
 DROP VIEW diag_principle ;
