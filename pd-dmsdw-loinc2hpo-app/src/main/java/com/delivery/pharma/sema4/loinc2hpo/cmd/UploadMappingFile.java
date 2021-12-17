@@ -39,6 +39,8 @@ public class UploadMappingFile implements Command {
     private String abnormalFlagMappingPath;
     @Parameter(names = "--race", description = "specify race map")
     private String raceMapPath;
+    @Parameter(names = "--biome", description = "specify biome sample-mrn map")
+    private String biomePath;
     @Parameter(names = "--debug", description = "running in debug mode")
     private boolean debug = false;
     @Parameter(names = "--schema", description = "explicitly specify the schema")
@@ -79,6 +81,10 @@ public class UploadMappingFile implements Command {
 
         if (raceMapPath != null){
             uploadRaceMapping(raceMapPath, jdbcTemplate, schema);
+        }
+
+        if (biomePath != null){
+            uploadBiomeMapping(biomePath, jdbcTemplate, schema);
         }
     }
 
@@ -342,6 +348,52 @@ public class UploadMappingFile implements Command {
         } catch (IOException e){
             e.printStackTrace();
         }
+        jdbcTemplate.update(sql + StringUtils.join(values, ","));
+
+    }
+
+    public void uploadBiomeMapping(String filePath, JdbcTemplate jdbcTemplate, String schema){
+
+        jdbcTemplate.execute(String.format("DROP TABLE IF EXISTS %s.biome_sample_mrn_map", schema));
+        String ddl = String.format("CREATE TABLE %s.biome_sample_mrn_map (" +
+                "mt_sinai_patient_id VARCHAR, " +
+                "mt_sinai_sample_id VARCHAR, " +
+                "mrn_de_id_link VARCHAR," +
+                "s4_sample_id VARCHAR)", schema);
+        jdbcTemplate.execute(ddl);
+
+        String sql = String.format("INSERT INTO %s.biome_sample_mrn_map values ", schema);
+        ArrayList<String> values = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))){
+            String line = reader.readLine();
+            while ((line = reader.readLine()) != null){
+                String[] fields = line.split(",", 4);
+                if (fields.length != 4){
+                    System.out.printf("length of line is %s%n", fields.length);
+                    System.out.println(line);
+                }
+                String sinai_patient_id = fields[0];
+                String sinai_sample_id = fields[1];
+                String mrn_deid = fields[2];
+                String s4_sample_id = fields[3];
+                if (mrn_deid.equals("NULL")){
+                    values.add(String.format("('%s', '%s', NULL, '%s')", sinai_patient_id, sinai_sample_id, s4_sample_id));
+                    //System.out.printf("ill formatted mrn_deid: %s%n", line);
+                    //System.out.println(String.format("('%s', '%s', NULL, '%s')", sinai_patient_id, sinai_sample_id, s4_sample_id));
+                } else if (s4_sample_id.equals("") | s4_sample_id.equals("#N/A")){
+                    values.add(String.format("('%s', '%s', '%s', NULL)", sinai_patient_id, sinai_sample_id, mrn_deid));
+                    //System.out.printf("ill formated s4_sample_id: %s%n", line);
+                    //System.out.println(String.format("('%s', '%s', '%s', NULL)", sinai_patient_id, sinai_sample_id, mrn_deid));
+                } else {
+                    values.add(String.format("('%s', '%s', '%s', '%s')", sinai_patient_id, sinai_sample_id, mrn_deid, s4_sample_id));
+                }
+            }
+        } catch (FileNotFoundException e){
+            e.printStackTrace();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        //System.out.println(sql + StringUtils.join(values, ","));
         jdbcTemplate.update(sql + StringUtils.join(values, ","));
 
     }

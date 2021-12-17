@@ -38,6 +38,11 @@
   </repositories>
 
   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <jcommander.version>1.72</jcommander.version>
+    <amazon.redshift.version>2.1.0.3</amazon.redshift.version>
   </properties>
 
   <dependencies>
@@ -46,17 +51,17 @@
       <artifactId>spring-boot-starter-jdbc</artifactId>
     </dependency>
 
+    <!-- https://mvnrepository.com/artifact/com.beust/jcommander -->
+    <dependency>
+      <groupId>com.beust</groupId>
+      <artifactId>jcommander</artifactId>
+      <version>${jcommander.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>com.amazon.redshift</groupId>
       <artifactId>redshift-jdbc42</artifactId>
-      <version>1.2.10.1009</version>
-    </dependency>
-
-    <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>42.2.12</version>
+      <version>${amazon.redshift.version}</version>
     </dependency>
 
     <dependency>

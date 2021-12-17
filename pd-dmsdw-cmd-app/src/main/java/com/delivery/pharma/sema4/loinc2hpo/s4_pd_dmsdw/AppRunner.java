@@ -1,69 +1,70 @@
 package com.delivery.pharma.sema4.loinc2hpo.s4_pd_dmsdw;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
+import com.delivery.pharma.sema4.loinc2hpo.s4_pd_dmsdw.cmd.DmsdwCMD;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
 
 @Component
 public class AppRunner implements CommandLineRunner {
 
-    @Autowired
-    JdbcTemplate jdbcTemplate;
+    @Autowired @Qualifier("dmsdw2trinetx")
+    DmsdwCMD dmsdw2trinetx;
 
     @Override
     public void run(String... args) throws Exception {
-        Integer personCount = jdbcTemplate.queryForObject("SELECT count(*) FROM dmsdw_2019q1.d_person;", Integer.class);
-        System.out.println("Person count: " + personCount);
-        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS pd_test_db.test_table (id INT, name VARCHAR(10));");
-        jdbcTemplate.execute("INSERT INTO pd_test_db.test_table VALUES (1, 'Aaron')");
-        jdbcTemplate.execute("INSERT INTO pd_test_db.test_table VALUES (2, 'Kelly')");
-        List<Person> personList = jdbcTemplate.query("SELECT * FROM pd_test_db.test_table", new RowMapper<Person>() {
-            @Override
-            public Person mapRow(ResultSet resultSet, int i) throws SQLException {
-                return new Person(resultSet.getInt(1), resultSet.getString(2));
+        System.out.println("Start Sema4DMSDW2TriNetX-Lite CliRunner...");
+
+        long startTime = System.currentTimeMillis();
+
+        JCommander jc = JCommander.newBuilder()
+                .addObject(this)
+                .acceptUnknownOptions(true) //this is for the sake of passing Spring variables
+                .addCommand("dmsdw2trinetx", dmsdw2trinetx)
+                .build();
+
+        try {
+            jc.parse(args);
+        } catch (ParameterException e) {
+            for (String arg : args) {
+                if (arg.contains("h")) {
+                    jc.usage();
+                    System.exit(0);
+                }
             }
-        });
-        jdbcTemplate.execute("DROP TABLE pd_test_db.test_table");
-        personList.forEach(System.out::println);
-    }
-
-    static class Person {
-        private int id;
-        private String name;
-
-        public Person(int id, String name) {
-            this.id = id;
-            this.name = name;
+            e.printStackTrace();
+            jc.usage();
+            System.exit(0);
         }
 
-        public int getId() {
-            return id;
+        String command = jc.getParsedCommand();
+
+        if (command == null) {
+            jc.usage();
+            System.exit(0);
         }
 
-        public void setId(int id) {
-            this.id = id;
+        DmsdwCMD cmd = null;
+        System.out.println("Starting com.sema4.s4-dmsdw-2-trinetx.command " + command);
+
+        switch (command) {
+            case "dmsdw2trinetx":
+                cmd = dmsdw2trinetx;
+                break;
+            default:
+                System.err.println(String.format("[ERROR] com.sema4.s4loinc2hpo.command \"%s\" not recognized",command));
+                jc.usage();
+                System.exit(1);
         }
 
-        public String getName() {
-            return name;
-        }
+        cmd.run();
 
-        public void setName(String name) {
-            this.name = name;
-        }
+        long stopTime = System.currentTimeMillis();
+        System.out.println("S4Loinc2HpoCli: Elapsed time was " + (stopTime - startTime)*(1.0)/1000 + " seconds.");
 
-        @Override
-        public String toString() {
-            return "Person{" +
-                    "id=" + id +
-                    ", name='" + name + '\'' +
-                    '}';
-        }
     }
 }
