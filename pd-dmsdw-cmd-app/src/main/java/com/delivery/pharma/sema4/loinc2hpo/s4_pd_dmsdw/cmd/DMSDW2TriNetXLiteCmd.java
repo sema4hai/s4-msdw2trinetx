@@ -4,6 +4,7 @@ import com.beust.jcommander.Parameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import javax.sql.DataSource;
@@ -26,20 +27,8 @@ public class DMSDW2TriNetXLiteCmd implements DmsdwCMD {
 
         // ref https://stackoverflow.com/questions/30732314/execute-sql-file-from-spring-jdbc-template
         ResourceDatabasePopulator databasePopulator = new ResourceDatabasePopulator();
-        databasePopulator.addScripts(preparation, person, diagnosis, lab_epic, lab_scc, medication, procedure);
-//        databasePopulator.execute(dataSource);
-
-        System.out.println(databasePopulator);
-//        System.out.println(resource.getFilename());
-//        try (BufferedReader reader = new BufferedReader(new FileReader(resource.getFile()))){
-//            String line;
-//            while ((line = reader.readLine()) != null) {
-//                System.out.println(line);
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
-
+//        databasePopulator.addScripts(preparation, person, diagnosis, lab_epic, lab_scc, medication, procedure);
+        databasePopulator.addScripts(preparation, procedure);
+        databasePopulator.execute(dataSource);
     }
 }

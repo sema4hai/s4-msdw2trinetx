@@ -8,8 +8,8 @@ SELECT person_key , encounter_key, caregiver_group_key, facility_key, diagnosis_
  LISTAGG(DISTINCT case when meta_data_key = 5721 then value end, '|') as Primary_Dx_FLAG,
  LISTAGG(DISTINCT case when meta_data_key = 5722 then value end, '|') as Chronic_Dx_Flag,
  LISTAGG(DISTINCT case when meta_data_key = 5723 then value end, '|') as Dx_Comments
-FROM dmsdw_2020q2.fact fact
-left join dmsdw_2020q2.b_diagnosis bd using (diagnosis_group_key)
+FROM dmsdw_2020q4.fact fact
+left join dmsdw_2020q4.b_diagnosis bd using (diagnosis_group_key)
 where bd.diagnosis_role = 'Primary'
 GROUP BY person_key , encounter_key, caregiver_group_key, facility_key, diagnosis_group_key, age_in_days_key;
 
@@ -21,9 +21,9 @@ SELECT p.medical_record_number , f.encounter_key, f.caregiver_group_key, f.diagn
 f.age_in_days_key,
 case when f.Primary_Dx_FLAG ~ 'Yes' then 'Primary' else 'Secondary' end as principal_diagnosis_indicator,  'EPIC Primary' AS diagnosis_source
 FROM epic_primary_wide f
-left join dmsdw_2020q2.d_person p using (person_key)
-left join dmsdw_2020q2.b_diagnosis bd using (diagnosis_group_key)
-left join dmsdw_2020q2.fd_diagnosis fdd using (diagnosis_key);
+left join dmsdw_2020q4.d_person p using (person_key)
+left join dmsdw_2020q4.b_diagnosis bd using (diagnosis_group_key)
+left join dmsdw_2020q4.fd_diagnosis fdd using (diagnosis_key);
 
 -- check whether there are multiple values
 SELECT EXISTS (SELECT * FROM epic_primary_wide where primary_dx_flag ~ '.*\\|.*');
@@ -36,11 +36,11 @@ dp.medical_record_number , f.encounter_key , f.caregiver_group_key, f.facility_k
 bd.diagnosis_role, bd.diagnosis_group_key , bd.diagnosis_rank,  bd.diagnosis_key ,
 fdd.context_name, fdd.context_diagnosis_code, fdd.description,
 f.age_in_days_key, f.time_of_day_key , f.meta_data_key, dm.level1_context_name, dm.level2_event_name, dm.level3_action_name, dm.level4_field_name
-FROM dmsdw_2020q2.fact f
-JOIN dmsdw_2020q2.d_person dp on f.person_key = dp.person_key
-JOIN dmsdw_2020q2.b_diagnosis bd ON f.diagnosis_group_key = bd.diagnosis_group_key
-JOIN dmsdw_2020q2.fd_diagnosis fdd on bd.diagnosis_key = fdd.diagnosis_key
-JOIN dmsdw_2020q2.d_metadata dm on f.meta_data_key = dm.meta_data_key
+FROM dmsdw_2020q4.fact f
+JOIN dmsdw_2020q4.d_person dp on f.person_key = dp.person_key
+JOIN dmsdw_2020q4.b_diagnosis bd ON f.diagnosis_group_key = bd.diagnosis_group_key
+JOIN dmsdw_2020q4.fd_diagnosis fdd on bd.diagnosis_key = fdd.diagnosis_key
+JOIN dmsdw_2020q4.d_metadata dm on f.meta_data_key = dm.meta_data_key
 where bd.diagnosis_role = 'Principal';
 
 DROP VIEW IF EXISTS diag_principle;
@@ -58,11 +58,11 @@ dp.medical_record_number , f.encounter_key , f.caregiver_group_key, f.facility_k
 bd.diagnosis_role, bd.diagnosis_group_key , bd.diagnosis_rank,  bd.diagnosis_key ,
 fdd.context_name, fdd.context_diagnosis_code, fdd.description,
 f.age_in_days_key, f.time_of_day_key , f.meta_data_key, dm.level1_context_name, dm.level2_event_name, dm.level3_action_name, dm.level4_field_name
-FROM dmsdw_2020q2.fact f
-JOIN dmsdw_2020q2.d_person dp on f.person_key = dp.person_key
-JOIN dmsdw_2020q2.b_diagnosis bd ON f.diagnosis_group_key = bd.diagnosis_group_key
-JOIN dmsdw_2020q2.fd_diagnosis fdd on bd.diagnosis_key = fdd.diagnosis_key
-JOIN dmsdw_2020q2.d_metadata dm on f.meta_data_key = dm.meta_data_key
+FROM dmsdw_2020q4.fact f
+JOIN dmsdw_2020q4.d_person dp on f.person_key = dp.person_key
+JOIN dmsdw_2020q4.b_diagnosis bd ON f.diagnosis_group_key = bd.diagnosis_group_key
+JOIN dmsdw_2020q4.fd_diagnosis fdd on bd.diagnosis_key = fdd.diagnosis_key
+JOIN dmsdw_2020q4.d_metadata dm on f.meta_data_key = dm.meta_data_key
 where bd.diagnosis_role = 'Problem List' and f.meta_data_key in (3490, 3491);
 
 DROP VIEW IF EXISTS problem_list;
@@ -81,8 +81,8 @@ LISTAGG(DISTINCT case when meta_data_key = 5719 then value end, '|') as Dx_Annot
  LISTAGG(DISTINCT case when meta_data_key = 5721 then value end, '|') as Primary_Dx_FLAG,
  LISTAGG(DISTINCT case when meta_data_key = 5722 then value end, '|') as Chronic_Dx_Flag,
  LISTAGG(DISTINCT case when meta_data_key = 5723 then value end, '|') as Dx_Comments
-FROM dmsdw_2020q2.fact fact
-JOIN dmsdw_2020q2.b_diagnosis bd using (diagnosis_group_key)
+FROM dmsdw_2020q4.fact fact
+JOIN dmsdw_2020q4.b_diagnosis bd using (diagnosis_group_key)
 where bd.diagnosis_role = 'Reason For Visit'
 GROUP BY person_key, encounter_key, caregiver_group_key, facility_key, diagnosis_group_key, age_in_days_key, time_of_day_key;
 
@@ -94,9 +94,9 @@ f.age_in_days_key ,
 case when f.Primary_Dx_FLAG ~ 'Yes' then 'Primary' else 'Secondary' end as principal_diagnosis_indicator,
 'Reason For Visit' as diagnosis_source
 FROM reason_visit_wide f
-left join dmsdw_2020q2.d_person p using (person_key)
-left join dmsdw_2020q2.b_diagnosis bd using (diagnosis_group_key)
-left join dmsdw_2020q2.fd_diagnosis fdd using (diagnosis_key);
+left join dmsdw_2020q4.d_person p using (person_key)
+left join dmsdw_2020q4.b_diagnosis bd using (diagnosis_group_key)
+left join dmsdw_2020q4.fd_diagnosis fdd using (diagnosis_key);
 
 
 
@@ -108,11 +108,11 @@ dp.medical_record_number , f.encounter_key , f.caregiver_group_key, f.facility_k
 bd.diagnosis_role, bd.diagnosis_group_key , bd.diagnosis_rank,  bd.diagnosis_key ,
 fdd.context_name, fdd.context_diagnosis_code, fdd.description,
 f.age_in_days_key, f.meta_data_key, dm.level1_context_name, dm.level2_event_name, dm.level3_action_name
-FROM dmsdw_2020q2.fact f
-JOIN dmsdw_2020q2.d_person dp on f.person_key = dp.person_key
-JOIN dmsdw_2020q2.b_diagnosis bd ON f.diagnosis_group_key = bd.diagnosis_group_key
-JOIN dmsdw_2020q2.fd_diagnosis fdd on bd.diagnosis_key = fdd.diagnosis_key
-JOIN dmsdw_2020q2.d_metadata dm on f.meta_data_key = dm.meta_data_key
+FROM dmsdw_2020q4.fact f
+JOIN dmsdw_2020q4.d_person dp on f.person_key = dp.person_key
+JOIN dmsdw_2020q4.b_diagnosis bd ON f.diagnosis_group_key = bd.diagnosis_group_key
+JOIN dmsdw_2020q4.fd_diagnosis fdd on bd.diagnosis_key = fdd.diagnosis_key
+JOIN dmsdw_2020q4.d_metadata dm on f.meta_data_key = dm.meta_data_key
 where bd.diagnosis_role = 'Secondary';
 
 DROP VIEW IF EXISTS secondary_diag;
@@ -122,7 +122,7 @@ SELECT medical_record_number, encounter_key, caregiver_group_key, diagnosis_grou
 FROM secondary_diag_staging;
 
 
-CREATE TABLE pd_test_db.diagnosis_2020q2 AS
+CREATE TABLE pd_prod_db.diagnosis_2020q4 AS
 SELECT * FROM epic_primary
 UNION ALL
 SELECT * FROM diag_principle

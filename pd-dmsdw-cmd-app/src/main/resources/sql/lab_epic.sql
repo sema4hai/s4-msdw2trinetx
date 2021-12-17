@@ -1,5 +1,5 @@
-drop table if exists pd_test_db.lab_epic_2020q2;
-CREATE TABLE pd_test_db.lab_epic_2020q2 AS
+drop table if exists pd_test_db.lab_epic_2020q4;
+CREATE TABLE pd_test_db.lab_epic_2020q4 AS
 WITH lab_epic_staging as (
 	SELECT mrn, age_in_days_key , lab_datetime , test_code , test_result_value ,
 	case when trim(unit_of_measurement) in ('SHORT TEXT', 'SHORT DESCRIPTION', '') then NULL else trim(unit_of_measurement) end as unit_of_measurement,
@@ -12,7 +12,7 @@ WITH lab_epic_staging as (
 	REPLACE(test_result_value_num, ',', '') :: REAL as test_result_value_final,
 	REPLACE(range_low, ',', '') :: REAL as range_low_final,
 	REPLACE(range_hi, ',', '') :: REAL  as range_hi_final
-	FROM dmsdw_2020q2.epic_lab el
+	FROM dmsdw_2020q4.epic_lab el
 	where test_result_value ~ '^[0-9]+(\\.[0-9]+((,[0-9]+)?))?'
 	and reference_range ~ '^[0-9]+(\\.[0-9]+((,[0-9]+)?))?\\s?-\\s?[0-9]+(\\.[0-9]+((,[0-9]+)?))?'
 	-- the following line filters out a few records with ridiculouly large value
