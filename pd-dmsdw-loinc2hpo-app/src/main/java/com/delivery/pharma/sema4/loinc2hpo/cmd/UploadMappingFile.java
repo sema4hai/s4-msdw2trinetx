@@ -41,6 +41,8 @@ public class UploadMappingFile implements Command {
     private String raceMapPath;
     @Parameter(names = "--biome", description = "specify biome sample-mrn map")
     private String biomePath;
+    @Parameter(names = "--rxnorm", description = "specify rxnorm map")
+    private String rxnormPath;
     @Parameter(names = "--debug", description = "running in debug mode")
     private boolean debug = false;
     @Parameter(names = "--schema", description = "explicitly specify the schema")
@@ -85,6 +87,10 @@ public class UploadMappingFile implements Command {
 
         if (biomePath != null){
             uploadBiomeMapping(biomePath, jdbcTemplate, schema);
+        }
+
+        if (rxnormPath != null){
+            uploadRxNormMapping(rxnormPath, jdbcTemplate, schema);
         }
     }
 
@@ -394,6 +400,52 @@ public class UploadMappingFile implements Command {
             e.printStackTrace();
         }
         //System.out.println(sql + StringUtils.join(values, ","));
+        jdbcTemplate.update(sql + StringUtils.join(values, ","));
+
+    }
+
+
+    public void uploadRxNormMapping(String filePath, JdbcTemplate jdbcTemplate, String schema){
+
+        jdbcTemplate.execute(String.format("DROP TABLE IF EXISTS %s.rxnorm_map", schema));
+        String ddl = String.format("CREATE TABLE %s.rxnorm_map (" +
+                "context_name VARCHAR, " +
+                "context_material_code VARCHAR, " +
+                "n INTEGER, " +
+                "material_name VARCHAR, " +
+                "queryText VARCHAR, " +
+                "rxnorm VARCHAR)", schema);
+        jdbcTemplate.execute(ddl);
+
+        String sql = String.format("INSERT INTO %s.rxnorm_map values ", schema);
+        ArrayList<String> values = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))){
+            String line = reader.readLine();
+            while ((line = reader.readLine()) != null){
+                String[] fields = line.split(",(?=(?:[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)", 6);
+                if (fields.length != 6){
+                    System.out.printf("length of line is %s%n", fields.length);
+                    System.out.println(line);
+                }
+                String context_name = fields[0];
+                String context_material_code = fields[1].replaceAll("'", "''");
+                int n = Integer.parseInt(fields[2]);
+                String material_name = fields[3].replaceAll("\"", "").replaceAll("'", "''");
+                String queryText = fields[4].replaceAll("'", "''");
+                String rxnorm = fields[5];
+                if (rxnorm.equals("")){
+                    values.add(String.format("('%s', '%s', %d, '%s', '%s', NULL)", context_name, context_material_code, n, material_name, queryText));
+//                    System.out.printf("not mapped to rxnorm: %s%n", line);
+//                    System.out.println(String.format("('%s', '%s', %d, '%s', '%s', NULL)", context_name, context_material_code, n, material_name, queryText));
+                } else {
+                    values.add(String.format("('%s', '%s', %d, '%s', '%s', '%s')", context_name, context_material_code, n, material_name, queryText, rxnorm));
+                }
+            }
+        } catch (FileNotFoundException e){
+            e.printStackTrace();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
         jdbcTemplate.update(sql + StringUtils.join(values, ","));
 
     }
