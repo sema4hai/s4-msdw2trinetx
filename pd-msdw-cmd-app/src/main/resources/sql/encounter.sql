@@ -1,4 +1,4 @@
-CREATE TABLE hai_az_test.encounter_dmsdw_2020July as
+CREATE TABLE hai_az_test.encounter_msdw_2020July as
 SELECT de.medical_record_number,
 de.encounter_key, de.encounter_visit_id, de.encounter_sub_visit_id ,
 de.msdw_encounter_type as encounter_type,
