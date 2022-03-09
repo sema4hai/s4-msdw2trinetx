@@ -1,7 +1,8 @@
 -- loinc2hpo for EPIC labs in MSDW
+-- have to use distinct because it appears each record is duplicated twice
 create temp table denormalized_epic_lab_2020july as
 with interpreted as (
-	SELECT lab.mrn, lab.order_date , lab.lab_time , lab.test_code , lab.test_result_value , lab.unit_of_measurement , lab.reference_range ,
+	SELECT distinct lab.mrn, lab.order_date , lab.lab_time , lab.test_code , lab.test_result_value , lab.unit_of_measurement , lab.reference_range ,
 	case
 			when test_result_value_final :: REAL < range_low_final ::REAL then 'L'
 			when test_result_value_final :: REAL > range_hi_final :: REAL then 'H'
