@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS hai_az_prod.scc_and_epic_lab_after_loinc2hpo_2020july;
 CREATE TABLE hai_az_prod.scc_and_epic_lab_after_loinc2hpo_2020july AS
 WITH epic_denormalized AS (
   SELECT medical_record_number, lab_date, lab_time, context_name, local_test_code :: VARCHAR, loinc,  lab_result_numeric_value, unit_of_measure, normal_range, interpretation, hpotermid, isnegated

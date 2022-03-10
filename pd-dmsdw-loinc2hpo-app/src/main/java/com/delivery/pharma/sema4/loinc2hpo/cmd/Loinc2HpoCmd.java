@@ -39,7 +39,6 @@ public class Loinc2HpoCmd implements Command {
         populator.addScript(new ClassPathResource("sql/loinc2hpo_Epic_MSDW.sql"));
         populator.addScript(new ClassPathResource("sql/loinc2hpo_combine_Epic_SCC.sql"));
 
-        //comment out for now @TODO: test
-        //populator.execute(dataSource);
+        populator.execute(dataSource);
     }
 }

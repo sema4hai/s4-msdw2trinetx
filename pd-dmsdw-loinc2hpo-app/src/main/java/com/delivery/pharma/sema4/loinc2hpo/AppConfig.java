@@ -39,4 +39,9 @@ public class AppConfig {
 
     @Bean(name = "loincTestablePhenotypes")
     public Command loincTestablePhenotypes() { return new LoincTestablePhenotypesCmd(); }
+
+    @Bean(name = "loinc2hpo")
+    public Command loinc2hpo(){
+        return new Loinc2HpoCmd();
+    }
 }

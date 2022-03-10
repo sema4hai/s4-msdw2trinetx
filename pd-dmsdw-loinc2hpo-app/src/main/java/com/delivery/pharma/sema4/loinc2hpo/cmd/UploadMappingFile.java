@@ -97,7 +97,7 @@ public class UploadMappingFile implements Command {
     public void uploadLabCode2Loinc(String filePath, JdbcTemplate jdbcTemplate, String schema){
         jdbcTemplate.execute(String.format("DROP TABLE IF EXISTS %s.loinc_mapping", schema));
         String ddl = String.format("CREATE TABLE %s.loinc_mapping " +
-                "(source VARCHAR(10)," +
+                "(source VARCHAR," +
                 "code VARCHAR," +
                 "test_name VARCHAR," +
                 "unit VARCHAR," +
