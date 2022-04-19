@@ -4,7 +4,6 @@
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>pom</packaging>
 	<modules>
-		<module>pd-dmsdw-core</module>
 		<module>pd-dmsdw-cmd-app</module>
 		<module>pd-msdw-loinc2hpo-app</module>
         <module>pd-msdw-cmd-app</module>
