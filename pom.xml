@@ -5,13 +5,13 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>pd-dmsdw-cmd-app</module>
-		<module>pd-msdw-loinc2hpo-app</module>
         <module>pd-msdw-cmd-app</module>
+		<module>pd-loinc2hpo-app</module>
     </modules>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.3.1.BUILD-SNAPSHOT</version>
+		<version>2.1.4.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.sema4</groupId>
@@ -19,12 +19,13 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>s4-pd-dmsdw</name>
 	<description>transform and analyze data in dmsdw</description>
-	<url>https://github.com/aaronzhangSema4/s4-pd-dmsdw</url>
+	<url>https://github.com/sema4hai/s4-msdw2trinetx</url>
 
 	<properties>
-		<java.version>1.8</java.version>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>11</java.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
 	</properties>
 
 	<dependencies>
@@ -69,6 +70,16 @@
 					<version>3.0.2</version>
 				</plugin>
 				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>3.1.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-shade-plugin</artifactId>
+					<version>3.2.4</version>
+				</plugin>
+				<plugin>
 					<artifactId>maven-install-plugin</artifactId>
 					<version>2.5.2</version>
 				</plugin>
@@ -89,21 +100,5 @@
 		</pluginManagement>
 	</build>
 
-
-	<pluginRepositories>
-		<pluginRepository>
-			<id>spring-milestones</id>
-			<name>Spring Milestones</name>
-			<url>https://repo.spring.io/milestone</url>
-		</pluginRepository>
-		<pluginRepository>
-			<id>spring-snapshots</id>
-			<name>Spring Snapshots</name>
-			<url>https://repo.spring.io/snapshot</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</pluginRepository>
-	</pluginRepositories>
 
 </project>

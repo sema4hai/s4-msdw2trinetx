@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>pd-dmsdw-loinc2hpo-app</artifactId>
+  <artifactId>pd-loinc2hpo-app</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
   <parent>
@@ -13,7 +13,7 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
 
-  <name>pd-dmsdw-loinc2hpo-app</name>
+  <name>pd-loinc2hpo-app</name>
 
   <repositories>
     <repository>
@@ -88,6 +88,42 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>com.delivery.pharma.sema4.loinc2hpo.S4PdLoinc2hpoApplication</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <!--                https://stackoverflow.com/questions/11160534/how-to-create-spring-based-executable-jar-with-maven-->
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <transformers>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+              <resource>META-INF/spring.handlers</resource>
+            </transformer>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+              <resource>META-INF/spring.schemas</resource>
+            </transformer>
+          </transformers>
+          <createDependencyReducedPom>false</createDependencyReducedPom>
+        </configuration>
+
       </plugin>
     </plugins>
 
