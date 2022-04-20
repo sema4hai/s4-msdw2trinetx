@@ -1,9 +1,9 @@
 # s4-msdw2trinetx
 
-This repo contains three majoy applications, 
+This repo contains three major applications, 
 
-- pd-msdw-cmd-app: a command line app to transform MSDW into a TriNetX-LITE CDM
-- pd-loinc2hpo-app: a command line app for LOINC2HPO transformation for MSDW (after transforming to the TriNetX-LITE CDM)
+- pd-msdw-cmd-app: a command line app to transform MSDW EHR into a TriNetX-LITE CDM
+- pd-loinc2hpo-app: a command line app for LOINC2HPO transformation  (after transforming to the TriNetX-LITE CDM; for MSDW only)
 - pd-dmsdw-cmd-app: a command line app to transform DMSDW into a TriNetX-LITE CDM
 
 \* What does "TriNetX-LITE" mean? It basically means the resulting data is very close to but not exactly TriNetX CDM. 
@@ -14,18 +14,18 @@ Below is a description of each app.
 
 This app transforms the MSDW EHR data into a TriNetX-like common data model. 
 
-The SQL queries used for data transformation is under src/main/resources/sql. You can further modify the queries if you think the logic can be improved. But generally you should not run the SQL queries manually for production. Instead, call the main function in ```MSDW2TriNetX_LITE_APP```, which will run the queries in the sequence defined in ```MSDW2TriNetXLiteCmd```. 
+The SQL queries used for data transformation is under the [sql](./pd-msdw-cmd-app/src/main/resources/sql) folder. You can further modify the queries if you think the logic can be improved. But generally you should not run the SQL queries manually for production. Instead, call the main function in ```MSDW2TriNetX_LITE_APP```, which will run the queries in the sequence defined in ```MSDW2TriNetXLiteCmd```. 
 
 ## pd-dmsdw-cmd-app
 
-This app transforms the now deprecated DMSDW EHR data into a TriNetX-like common data model. It was developed before pd-msdw-cmd-app, and is actually the backbone for the latter (therefore they are nearly identical, except some customizations for ETL SQL queries).
+This app transforms the now deprecated DMSDW EHR data into a TriNetX-like common data model. It was developed before pd-msdw-cmd-app, and the latter was actually adapted from it (therefore they are nearly identical, except some customizations for ETL SQL queries).
 
 
 ## pd-loinc2hpo-app
 
-This app is an implementation of the LOINC2HPO algorithm. MSDW EHR data has to be converted into TriNetX with the pd-msdw-cmd-app before you can use this app. It currently only supports MSDW but not DMSDW.
+This app is an implementation of the LOINC2HPO algorithm. MSDW EHR data has to be converted into TriNetX with ```pd-msdw-cmd-app``` first before you can use this app. It currently only supports MSDW but can be extended to DMSDW if necessary.
 
-Implementation of LOINC2HPO can be roughly devided into two steps:
+Implementation of LOINC2HPO can be roughly divided into two steps:
 
 Step 1, convert lab results from local code to LOINC;
 
@@ -38,27 +38,28 @@ For Step 2, one can find the ETL queries under the [resource/sql](./pd-loinc2hpo
 
 # How to use the apps?
 
-Option 1, you can always use an IDE (IntelliJ IDEA) to run them, especially if you are also developing the tools. 
+Option 1, you can always use an IDE (IntelliJ IDEA) to run them, especially if you are also developing them. 
 
-Option 2, package code into jar files and run from the terminal. 
+Option 2, package the code into jar files and run them from the terminal. 
 
-Regardless of which option you choose, you will need to provide database credentials with the following environment variables:
+Regardless of which option you choose, you will need to provide database credentials to DSCA with the following environment variables:
 
 - spring.datasource.url
 - spring.datasource.username
 - spring.datasource.password
 
-Refer to the application.properties files under the resource directory of each app to find default values, for example, [application-prod.properties](./pd-msdw-cmd-app/src/main/resources/application-prod.properties).
+Refer to the ```application.properties``` files under the resource directory of each app to find default values, for example, [application-prod.properties](./pd-msdw-cmd-app/src/main/resources/application-prod.properties).
 
 Here is a step-by-step process for Option 2:
 
 1. Package jar files. Within this code directory, run
     ```bash 
+    # you need to have maven installed, refer to https://maven.apache.org/install.html
     mvn package
     ```
    This will create jar files (starting with "original") in the target folder under each application folder.
 
-2. Create a docker image to run the apps. The base image is bundled with a Java 11 JRE. Skip Step 2 and 3 if you want to run the jar files directly on your laptop (you need a Java 11 runtime).
+2. Create a docker image to run the apps. The base image is bundled with a Java 11 JRE. Skip Step 2 and 3 if you want to run the jar files directly on your laptop (you need a Java 11 runtime or higher).
     ``` 
     docker build --tag msdw2trinetx:0.1 .
     ```
@@ -70,7 +71,7 @@ Here is a step-by-step process for Option 2:
     docker run -it msdw2trinetx:0.1
        
     # within the docker container
-    # you may run ls command to list the jar files: you should see three jar files
+    # you may run the ls command to list the jar files: you should see three jar files
     ```
 4. Run the jar file for ```pd-msdw-cmd-app``` to convert MSDW EHR into a TriNetX CDM. 
     ```
@@ -113,7 +114,7 @@ Here is a step-by-step process for Option 2:
     ```
     java -jar original-pd-loinc2hpo-app-0.0.1-SNAPSHOT.jar
     ```
-   You should get the usage information in your terminal like below:
+   You should get the usage information in your terminal like below. There are many commands, but you only need to run ```uploadMappingFile``` and ```loinc2hpo``` successively for this task.
     ```
     Start Sema4Loinc2HpoCliRunner...
     Usage: <main class> [command] [command options]
@@ -181,10 +182,6 @@ Here is a step-by-step process for Option 2:
             Options:
             * --schema
     ```
-   
-    Ther are many commands, but only you only need to run ```uploadMappingFile``` and ```loinc2hpo``` successively for this task. 
-
-    <br><br>
 
     The following shows how to run ```uploadMappingFile``` (note it is not a valid bash command due to line breaks and comments; all required files are contained in the [resource](./pd-loinc2hpo-app/src/main/resources) directory except for ```race``` mapping):
     ```
