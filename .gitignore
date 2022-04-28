@@ -16,6 +16,7 @@ DMSDW database.MD
 
 # Package Files #
 *.jar
+!release/*.jar
 *.war
 *.nar
 *.ear
