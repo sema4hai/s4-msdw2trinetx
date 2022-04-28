@@ -61,14 +61,22 @@ Here is a step-by-step process for Option 2:
 
 2. Create a docker image to run the apps. The base image is bundled with a Java 11 JRE. Skip Step 2 and 3 if you want to run the jar files directly on your laptop (you need a Java 11 runtime or higher).
     ``` 
-    docker build --tag msdw2trinetx:0.1 .
+    docker build --tag msdw2trinetx:0.0.1-SNAPSHOT .
     ```
    The resulting image has all three jar files under the ```/s4-msdw2trinetx``` directory.
+
+   Note:
+   There are precompiled packages available. 
+   You can skip Steps 1 and 2 by directly pulling from Sema4 JFrog if you have access. 
+   ```bash 
+   docker pull sema4jfroginfra0001-s4-docker.jfrog.io/s4-msdw2trinetx:0.0.1-SNAPSHOT
+   ```
+   Or you can skip Step 1 by downloading the release files directly from the [release folder](./release). 
 
 3. Start a docker container. 
     ```
     # start your docker and in your terminal
-    docker run -it msdw2trinetx:0.1
+    docker run -it msdw2trinetx:0.0.1-SNAPSHOT
        
     # within the docker container
     # you may run the ls command to list the jar files: you should see three jar files
